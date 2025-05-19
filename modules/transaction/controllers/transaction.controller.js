@@ -1,6 +1,7 @@
 const { Database } = require('../../../config/db');
 const sequelize = Database.getInstance().getSequelizeInstance();
 const { QueryTypes } = require('sequelize');
+const { generateInvoiceNumber } = require('../../../utils/generateInvoiceNumber')
 
 const postTransaction = async (req, res) => {
     const t = await sequelize.transaction();
@@ -59,7 +60,7 @@ const postTransaction = async (req, res) => {
             transaction: t,
         });
 
-        const invoice_number = generateInvoiceNumber();
+        const invoice_number = await generateInvoiceNumber(sequelize, t);
         const transactionInsertQuery = `
             INSERT INTO transactions 
             (invoice_number, user_id, service_code, service_name, transaction_type, total_amount, created_on)
@@ -110,15 +111,17 @@ const getTransactionHistory = async (req, res) => {
 
         const historyQuery = `
             SELECT 
-                invoice_number, 
-                transaction_type, 
-                description, 
-                total_amount, 
-                created_on 
-            FROM transactions 
-            WHERE user_id = :userId 
-            ORDER BY created_on DESC 
-            LIMIT :limit OFFSET :offset`;
+                t.invoice_number,
+                t.transaction_type,
+                s.service_name AS description,
+                t.total_amount,
+                t.created_on
+            FROM transactions t
+            LEFT JOIN services s ON t.service_code = s.service_code
+            WHERE t.user_id = :userId
+            ORDER BY t.created_on DESC
+            LIMIT :limit OFFSET :offset
+        `;
 
         const records = await sequelize.query(historyQuery, {
             replacements: { userId, limit, offset },
@@ -142,12 +145,6 @@ const getTransactionHistory = async (req, res) => {
         });
     }
 };
-
-function generateInvoiceNumber() {
-    const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const rand = Math.floor(Math.random() * 900 + 100);
-    return `INV${date}-${rand}`;
-}
 
 module.exports = {
     postTransaction,
