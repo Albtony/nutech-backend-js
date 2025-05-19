@@ -110,15 +110,17 @@ const getTransactionHistory = async (req, res) => {
 
         const historyQuery = `
             SELECT 
-                invoice_number, 
-                transaction_type, 
-                description, 
-                total_amount, 
-                created_on 
-            FROM transactions 
-            WHERE user_id = :userId 
-            ORDER BY created_on DESC 
-            LIMIT :limit OFFSET :offset`;
+                t.invoice_number,
+                t.transaction_type,
+                s.service_name AS description,
+                t.total_amount,
+                t.created_on
+            FROM transactions t
+            LEFT JOIN services s ON t.service_code = s.service_code
+            WHERE t.user_id = :userId
+            ORDER BY t.created_on DESC
+            LIMIT :limit OFFSET :offset
+        `;
 
         const records = await sequelize.query(historyQuery, {
             replacements: { userId, limit, offset },
