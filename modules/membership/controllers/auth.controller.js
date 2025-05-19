@@ -24,9 +24,9 @@ const register = async (req, res) => {
         });
 
         if (existingUsers) {
-            return res.status(409).json({ 
+            return res.status(400).json({ 
                 status: 1, 
-                message: 'Email already registered', 
+                message: 'Email sudah terdaftar', 
                 data: null 
             });
         }
