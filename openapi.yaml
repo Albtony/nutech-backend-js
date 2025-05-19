@@ -5,7 +5,7 @@ info:
   description: Nutech backend take home test with Express.JS
 
 servers:
-  - url: http://localhost:5000
+  - url: https://nutech-backend-js-production.up.railway.app/
 
 tags:
   - name: Membership
