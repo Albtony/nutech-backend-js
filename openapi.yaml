@@ -1,0 +1,240 @@
+openapi: 3.0.3
+info:
+  title: Nutech Test Backend API
+  version: 1.0.0
+  description: Nutech backend take home test with Express.JS
+
+servers:
+  - url: http://localhost:5000
+
+tags:
+  - name: Membership
+    description: Handles user registration, login, and profile management
+  - name: Information
+    description: Banner and Services related endpoints
+  - name: Transaction
+    description: Operations related to user transactions, balance, and top-up
+
+paths:
+  /registration:
+    post:
+      tags:
+        - Membership
+      summary: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - first_name
+                - last_name
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@nutech-integrasi.com
+                first_name:
+                  type: string
+                  example: User
+                last_name:
+                  type: string
+                  example: Nutech
+                password:
+                  type: string
+                  format: password
+                  example: abcdef1234
+      responses:
+        '200':
+          description: Registration successful
+
+  /login:
+    post:
+      tags:
+        - Membership
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@nutech-integrasi.com
+                password:
+                  type: string
+                  format: password
+                  example: abcdef1234
+      responses:
+        '200':
+          description: Login successful
+
+  /profile:
+    get:
+      tags:
+        - Membership
+      summary: Get user profile (auth required)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile data
+
+  /profile/update:
+    put:
+      tags:
+        - Membership
+      summary: Update user profile (auth required)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - first_name
+                - last_name
+              properties:
+                first_name:
+                  type: string
+                  example: User Edited
+                last_name:
+                  type: string
+                  example: Nutech Edited
+      responses:
+        '200':
+          description: Profile updated successfully
+
+  /profile/image:
+    put:
+      tags:
+        - Membership
+      summary: Update user profile image (auth required)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile image updated successfully
+
+  /banner:
+    get:
+      tags:
+        - Information
+      summary: Get all banners
+      responses:
+        '200':
+          description: List of all banners retrieved successfully
+
+  /services:
+    get:
+      tags:
+        - Information
+      summary: Get all services
+      responses:
+        '200':
+          description: List of all services retrieved successfully
+
+  /balance:
+    get:
+      tags:
+        - Transaction
+      summary: Get user balance
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User balance retrieved
+
+  /topup:
+    post:
+      tags:
+        - Transaction
+      summary: Top up user balance
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                top_up_amount:
+                  type: integer
+                  example: 1000000
+      responses:
+        '200':
+          description: Top up successful
+
+  /transaction:
+    post:
+      tags:
+        - Transaction
+      summary: Post a new transaction/payment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                service_code:
+                  type: string
+                  example: "PULSA"
+      responses:
+        '200':
+          description: Transaction successful
+
+  /transaction/history:
+    get:
+      tags:
+        - Transaction
+      summary: Get transaction history
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: Pagination offset
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 3
+          description: Pagination limit
+      responses:
+        '200':
+          description: Transaction history retrieved
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
