@@ -11,11 +11,11 @@ async function startServer() {
         await db.authenticate();
         console.log('[server]: Connected to the database');
 
-        await db.sync();
+        await db.sync({ alter: true });
         console.log('[server]: Models synchronized with the database');
 
         app.listen(PORT, () => {
-        console.log(`[server]: Server is running at http://localhost:${PORT}`);
+            console.log(`[server]: Server is running at http://localhost:${PORT}`);
         });
     } catch (error) {
         console.error('[server]: Error connecting to the database:', error);
