@@ -39,7 +39,10 @@ const topUp = async (req, res) => {
     try {
         const userId = req.user.id;
         const { top_up_amount } = req.body;
-        if (!top_up_amount || top_up_amount <= 0) {
+        if (top_up_amount === undefined ||
+            typeof top_up_amount !== 'number' ||
+            !Number.isInteger(top_up_amount) ||
+            top_up_amount <= 0) {
             return res.status(400).json({
                 status: 1,
                 message: 'Invalid top up amount',
