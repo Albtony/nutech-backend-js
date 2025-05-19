@@ -5,8 +5,8 @@ const { QueryTypes } = require('sequelize');
 const getAllServices = async (req, res) => {
     try {
         const selectQuery = 'SELECT service_code, service_name, service_icon, service_tariff FROM services ORDER BY service_name ASC';
-        const [services] = await sequelize.query(selectQuery, {
-            type: sequelize.QueryTypes.SELECT,
+        const services = await sequelize.query(selectQuery, {
+            type: QueryTypes.SELECT,
         });
 
         res.status(200).json({
