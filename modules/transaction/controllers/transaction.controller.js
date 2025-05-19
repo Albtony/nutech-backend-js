@@ -1,6 +1,7 @@
 const { Database } = require('../../../config/db');
 const sequelize = Database.getInstance().getSequelizeInstance();
 const { QueryTypes } = require('sequelize');
+const { generateInvoiceNumber } = require('../../../utils/generateInvoiceNumber')
 
 const postTransaction = async (req, res) => {
     const t = await sequelize.transaction();
@@ -59,7 +60,7 @@ const postTransaction = async (req, res) => {
             transaction: t,
         });
 
-        const invoice_number = generateInvoiceNumber();
+        const invoice_number = await generateInvoiceNumber(sequelize, t);
         const transactionInsertQuery = `
             INSERT INTO transactions 
             (invoice_number, user_id, service_code, service_name, transaction_type, total_amount, created_on)
@@ -144,12 +145,6 @@ const getTransactionHistory = async (req, res) => {
         });
     }
 };
-
-function generateInvoiceNumber() {
-    const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const rand = Math.floor(Math.random() * 900 + 100);
-    return `INV${date}-${rand}`;
-}
 
 module.exports = {
     postTransaction,

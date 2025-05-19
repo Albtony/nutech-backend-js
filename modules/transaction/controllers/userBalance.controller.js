@@ -1,6 +1,7 @@
 const { Database } = require('../../../config/db');
 const sequelize = Database.getInstance().getSequelizeInstance();
 const { QueryTypes } = require('sequelize');
+const { generateInvoiceNumber } = require('../../../utils/generateInvoiceNumber')
 
 const getBalance = async (req, res) => {
     try {
@@ -49,6 +50,7 @@ const topUp = async (req, res) => {
             });
         }
 
+        const invoiceNumber = await generateInvoiceNumber(sequelize, t);
         const selectQuery = `SELECT balance FROM user_balances WHERE user_id = :userId LIMIT 1`;
         const [existing] = await sequelize.query(selectQuery, {
             replacements: { userId },
@@ -72,6 +74,19 @@ const topUp = async (req, res) => {
                 type: QueryTypes.UPDATE,
             });
         }
+
+        const insertTransactionQuery = `
+            INSERT INTO transactions (
+                invoice_number, user_id, transaction_type, description, total_amount, created_on, service_code, service_name
+            ) VALUES (
+                :invoiceNumber, :userId, 'TOPUP', 'Top Up balance', :amount, NOW(), 'TOPUP', 'Top Up'
+            )
+        `;
+        await sequelize.query(insertTransactionQuery, {
+            replacements: { invoiceNumber, userId, amount: top_up_amount },
+            transaction: t,
+            type: QueryTypes.INSERT,
+        });
 
         await t.commit();
         const [updated] = await sequelize.query(selectQuery, {
