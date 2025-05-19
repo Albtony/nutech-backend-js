@@ -8,10 +8,10 @@ const postTransaction = async (req, res) => {
         const userId = req.user.id;
         const { service_code } = req.body;
 
-        if (!service_code) {
+        if (!service_code || typeof service_code !== 'string') {
             return res.status(400).json({
                 status: 1,
-                message: 'Service code is required',
+                message: 'Service code is required and must be a string',
             });
         }
 
@@ -77,7 +77,7 @@ const postTransaction = async (req, res) => {
             type: QueryTypes.INSERT,
             transaction: t,
         });
-        
+
         await t.commit();
         return res.status(200).json({
             status: 0,
